@@ -6,11 +6,11 @@ int infinity = std::numeric_limits<int>::max();
   std::vector<int> dist;
   dist.resize(n,infinity);
   dist[source] = 0;
-  for(int i = 1; i <n; i++)
+  for (int i = 0; i < n; i++)
   {
-    for (int u = 0; u < n; u++)
+    std::vector<krawedz>::iterator it;
+    for(int u = 0; u < n; u++)
     {
-      std::vector<krawedz>::iterator it;
       if (dist[u] != infinity)
       {
         for(it = l[u].begin(); it != l[u].end(); it++)
@@ -23,21 +23,25 @@ int infinity = std::numeric_limits<int>::max();
       }
     }
   }
-  for(int i = 1; i <n; i++)
+
+  for (int i = 0; i < n; i++)
   {
-    for (int u = 0; u < n; u++)
+    std::vector<krawedz>::iterator it;
+    for(int u = 0; u < n; u++)
     {
-      std::vector<krawedz>::iterator it;
+      if (dist[u] != infinity)
+      {
         for(it = l[u].begin(); it != l[u].end(); it++)
         {
-          if(dist[(*it).first] > dist[u] + (*it).second)
+          if(dist[(*it).first] != infinity && dist[(*it).first] > dist[u] + (*it).second)
           {
             return true;
           }
         }
+      }
     }
   }
-  return false;
+    return false;
 }
 
 std::vector<int>  bellmanFordAlgorithm(int source, lista_sasiedztwa l)
@@ -47,7 +51,7 @@ int infinity = std::numeric_limits<int>::max();
   std::vector<int> dist;
   dist.resize(n,infinity);
   dist[source] = 0;
-  for(int i = 1; i <n; i++)
+  for(int i = 0; i <n; i++)
   {
     for (int u = 0; u < n; u++)
     {

@@ -40,7 +40,7 @@ std::vector<int> pathTo(
         int vertex, const std::vector<int> &previous)
 {
     std::vector<int> path;
-    for ( ; vertex != -1; vertex = previous[vertex])
+    for ( ; vertex!= -1; vertex = previous[vertex])
         path.insert(path.begin(), vertex+1);
     return path;
 }

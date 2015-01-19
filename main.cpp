@@ -4,7 +4,10 @@
 #include <numeric>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
+#include <iostream>
 
+int infinity = std::numeric_limits<int>::max();
 void loadFromFile(lista_sasiedztwa &lista)
 {
     std::ifstream wejscie;
@@ -120,6 +123,7 @@ std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l, std::vector<int>
 {
   std::vector<std::vector<int>> matrix;
   matrix.resize(l.size());
+  int waga = 0;
   for(auto &x: matrix)
   {
     x.resize(l.size(), 0);
@@ -132,6 +136,8 @@ std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l, std::vector<int>
     for(size_t j = 0; j < l.size(); j++)
     {
       //std::vector<int> wagi = pathTo(j,p);
+      if( p[j] != -1)
+      {
       std::vector<int> tmp = pathTo(j, p);
       std::vector<int> wagi;
       for(unsigned long i = 0; i< tmp.size()-1; i++)
@@ -139,12 +145,22 @@ std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l, std::vector<int>
         wagi.push_back(calculateWeight(l[tmp[i] - 1], tmp[i + 1] - 1));
       }
 
-      int waga = std::accumulate(wagi.begin(), wagi.end(), 0);
+      waga = std::accumulate(wagi.begin(), wagi.end(), 0);
       waga = waga + potentials[j] - potentials[i];
-      //if (waga == 0 && j != i)
-      //{
-        //waga = -1; //Oznaczamy brak możliwości dojścia do wierzchołka danego.
-      //}
+      if (waga == 0 && j != i)
+      {
+        waga = -1; //Oznaczamy brak możliwości dojścia do wierzchołka danego.
+      }
+      } else
+      {
+        if( i == j)
+        {
+          waga = 0;
+        } else
+        {
+          waga = infinity;
+        }
+      }
       matrix[i][j] = waga;
     }
   }
@@ -198,11 +214,19 @@ int main(void)
     calculateNewWeights(l,odl);
     //std::cout <<"haha";
     wagi = createMatrix(l, odl);
+    std::setw(3);
+    std::setfill(' ');
     for(auto a:wagi)
     {
       for (auto w : a)
       {
-        std::cout << w << " ";
+        if (w == infinity)
+        {
+          std::cout  <<std::setw(3) << std::setfill(' ') << "X";
+        } else
+        {
+          std::cout  <<std::setw(3) << std::setfill(' ')<< w ;
+        }
       }
       std::cout << std::endl;
     }
