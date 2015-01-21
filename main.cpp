@@ -6,51 +6,52 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
+#include <algorithm>
+#include <iterator>
 
 int infinity = std::numeric_limits<int>::max();
+
 void loadFromFile(lista_sasiedztwa &lista)
 {
-    std::ifstream wejscie;
-    wejscie.open("we1.txt");
-    std::stringstream ss;
-    std::string tmp;
-    int maxWierzcholek = 0;
-    int tempW;
-    while(getline(wejscie, tmp))
-    {
-        ss.clear();
-        ss.str(tmp);
+  std::ifstream wejscie;
+  wejscie.open("we1.txt");
+  std::stringstream ss;
+  std::string tmp;
+  int maxWierzcholek = 0;
+  int tempW;
+  while(getline(wejscie, tmp))
+  {
+    ss.clear();
+    ss.str(tmp);
 
-        ss >> tempW;
-        maxWierzcholek = std::max(maxWierzcholek, tempW);
+    ss >> tempW;
+    maxWierzcholek = std::max(maxWierzcholek, tempW);
 
-        ss >> tempW;
-        maxWierzcholek = std::max(maxWierzcholek, tempW);
-    }
-    for (int i = 0; i < maxWierzcholek; i++)
-    {
-        std::vector<krawedz> listaW;
-        lista.push_back(listaW);
-    }
-    std::cout << "maxWierzcholek: " << maxWierzcholek << std::endl;
-
-    wejscie.clear();
-    wejscie.seekg(0, std::ios::beg);
-    while(getline(wejscie,tmp))
-    {
-        ss.clear();
-        ss.str(tmp);
-        int poczatek;
-        ss >> poczatek;
-        poczatek--;
-        krawedz k;
-        ss >> k.first;
-        k.first--;
-        ss >> k.second;
-        lista.at(poczatek).push_back(k);
-    }
-    wejscie.close();
-    return;
+    ss >> tempW;
+    maxWierzcholek = std::max(maxWierzcholek, tempW);
+  }
+  for (int i = 0; i < maxWierzcholek; i++)
+  {
+    std::vector<krawedz> listaW;
+    lista.push_back(listaW);
+  }
+  wejscie.clear();
+  wejscie.seekg(0, std::ios::beg);
+  while(getline(wejscie,tmp))
+  {
+    ss.clear();
+    ss.str(tmp);
+    int poczatek;
+    ss >> poczatek;
+    poczatek--;
+    krawedz k;
+    ss >> k.first;
+    k.first--;
+    ss >> k.second;
+    lista.at(poczatek).push_back(k);
+  }
+  wejscie.close();
+  return;
 }
 
 
@@ -84,7 +85,7 @@ void calculateNewWeights(lista_sasiedztwa &l, std::vector<int> d)
   }
 }
 
-std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l)
+std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l, std::vector<std::vector<int>> &sciezki)
 {
   std::vector<std::vector<int>> matrix;
   matrix.resize(l.size());
@@ -99,27 +100,61 @@ std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l)
     dijkstraCalculatePaths(i, l, d, p);
     for(size_t j = 0; j < l.size(); j++)
     {
-      //std::vector<int> wagi = pathTo(j,p);
-      std::vector<int> tmp = pathTo(j, p);
-      std::vector<int> wagi;
-      for(unsigned long i = 0; i< tmp.size()-1; i++)
+        int waga;
+      if( p[j] != -1)
       {
-        wagi.push_back(calculateWeight(l[tmp[i] - 1], tmp[i + 1] - 1));
-      }
+        std::vector<int> tmp = pathTo(j, p);
+        sciezki.push_back(tmp);
+        std::vector<int> wagi;
+        for(unsigned long i = 0; i< tmp.size()-1; i++)
+        {
+          wagi.push_back(calculateWeight(l[tmp[i] - 1], tmp[i + 1] - 1));
+        }
 
-      int waga = std::accumulate(wagi.begin(), wagi.end(), 0);
-      if (waga == 0 && j != i)
+        waga = std::accumulate(wagi.begin(), wagi.end(), 0);
+        if (waga == 0 && j != i)
+        {
+          waga = -1; //Oznaczamy brak możliwości dojścia do wierzchołka danego.
+        }
+      } else
       {
-        waga = -1; //Oznaczamy brak możliwości dojścia do wierzchołka danego.
+        if( i == j)
+        {
+          waga = 0;
+        } else
+        {
+          waga = infinity;
+        }
       }
       matrix[i][j] = waga;
     }
   }
   return matrix;
 }
+    //for(size_t j = 0; j < l.size(); j++)
+    //{
+      //std::vector<int> tmp = pathTo(j, p);
+      //if( i != j)
+      //sciezki.push_back(tmp);
+      //std::vector<int> wagi;
+      //for(unsigned long i = 0; i< tmp.size()-1; i++)
+      //{
+        //wagi.push_back(calculateWeight(l[tmp[i] - 1], tmp[i + 1] - 1));
+      //}
+
+      //int waga = std::accumulate(wagi.begin(), wagi.end(), 0);
+      //if (waga == 0 && j != i)
+      //{
+        //waga = infinity; //Oznaczamy brak możliwości dojścia do wierzchołka danego.
+      //}
+      //matrix[i][j] = waga;
+    //}
+  //}
+  //return matrix;
+//}
 
 
-std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l, std::vector<int> &potentials)
+std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l, std::vector<int> &potentials, std::vector<std::vector<int>> &sciezki)
 {
   std::vector<std::vector<int>> matrix;
   matrix.resize(l.size());
@@ -135,22 +170,22 @@ std::vector<std::vector<int>> createMatrix(lista_sasiedztwa &l, std::vector<int>
     dijkstraCalculatePaths(i, l, d, p);
     for(size_t j = 0; j < l.size(); j++)
     {
-      //std::vector<int> wagi = pathTo(j,p);
       if( p[j] != -1)
       {
-      std::vector<int> tmp = pathTo(j, p);
-      std::vector<int> wagi;
-      for(unsigned long i = 0; i< tmp.size()-1; i++)
-      {
-        wagi.push_back(calculateWeight(l[tmp[i] - 1], tmp[i + 1] - 1));
-      }
+        std::vector<int> tmp = pathTo(j, p);
+        sciezki.push_back(tmp);
+        std::vector<int> wagi;
+        for(unsigned long i = 0; i< tmp.size()-1; i++)
+        {
+          wagi.push_back(calculateWeight(l[tmp[i] - 1], tmp[i + 1] - 1));
+        }
 
-      waga = std::accumulate(wagi.begin(), wagi.end(), 0);
-      waga = waga + potentials[j] - potentials[i];
-      if (waga == 0 && j != i)
-      {
-        waga = -1; //Oznaczamy brak możliwości dojścia do wierzchołka danego.
-      }
+        waga = std::accumulate(wagi.begin(), wagi.end(), 0);
+        waga = waga + potentials[j] - potentials[i];
+        if (waga == 0 && j != i)
+        {
+          waga = -1; //Oznaczamy brak możliwości dojścia do wierzchołka danego.
+        }
       } else
       {
         if( i == j)
@@ -185,20 +220,14 @@ bool canUseDijkstra(lista_sasiedztwa &l)
 int main(void)
 {
   lista_sasiedztwa l;
-  std::vector<std::vector<int>> wagi;
   loadFromFile(l);
+  std::vector<std::vector<int>> wagi;
+  std::vector<std::vector<int>> sciezki;
+
   bool mozna = canUseDijkstra(l);
   if (mozna)
   {
-    wagi = createMatrix(l);
-    for(auto a:wagi)
-    {
-      for (auto w : a)
-      {
-        std::cout << w << " ";
-      }
-      std::cout << std::endl;
-    }
+    wagi = createMatrix(l, sciezki);
   } else
   {
     for(size_t i = 0; i < l.size(); i++)
@@ -212,24 +241,29 @@ int main(void)
     }
     std::vector<int> odl = calculatePotential(l);
     calculateNewWeights(l,odl);
-    //std::cout <<"haha";
-    wagi = createMatrix(l, odl);
-    std::setw(3);
-    std::setfill(' ');
-    for(auto a:wagi)
+    wagi = createMatrix(l, odl, sciezki);
+  }
+  std::setw(3);
+  std::setfill(' ');
+  for(auto a:wagi)
+  {
+    for (auto w : a)
     {
-      for (auto w : a)
+      if (w == infinity)
       {
-        if (w == infinity)
-        {
-          std::cout  <<std::setw(3) << std::setfill(' ') << "X";
-        } else
-        {
-          std::cout  <<std::setw(3) << std::setfill(' ')<< w ;
-        }
+        std::cout  <<std::setw(3) << std::setfill(' ') << "X";
+      } else
+      {
+        std::cout  <<std::setw(3) << std::setfill(' ')<< w ;
       }
-      std::cout << std::endl;
     }
+    std::cout << std::endl;
+  }
+  for(auto x: sciezki)
+  {
+    std::cout << "Sciezka z " <<x[0] << " do " <<x[x.size()-1] << ": ";
+    std::copy(x.begin(), x.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout <<std::endl;
   }
   return 0;
 }
