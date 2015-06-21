@@ -219,6 +219,7 @@ bool canUseDijkstra(lista_sasiedztwa &l)
 
 int main(void)
 {
+  std::cout<<"Johnson"<<std::endl;
   lista_sasiedztwa l;
   loadFromFile(l);
   std::vector<std::vector<int>> wagi;
